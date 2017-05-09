@@ -7,6 +7,7 @@ docker run -d --name $NAME \
            -h $(hostname -f) \
            -e "ELASTICSEARCH_HOST=10.247.134.224" \
            -e "ELASTICSEARCH_PORT=9200" \
+           -e "EMAIL_ADDRESS=root@localhost" \
            -v $PWD/config/config.yaml:/opt/elastalert/elastalert_config.yaml \
            -v $PWD/rules/:/opt/elastalert/rules/ \
     elastalert
