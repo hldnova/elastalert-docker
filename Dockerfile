@@ -16,14 +16,15 @@ RUN apt update && \
     apt install -y --no-install-recommends \
         ca-certificates openssl libffi-dev libssl-dev gcc \
         python-dev python-pip python-setuptools \
-        wget net-tools less unzip vim && \
-    rm -rf /var/cache/apt/* 
+        wget net-tools less unzip && \
 
 # Install smtp client
-RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections &&\
+    echo "postfix postfix/mailname string localhost" | debconf-set-selections &&\
     echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections &&\
-    apt-get install -y mailutils --no-install-recommends && \
-    rm -rf /var/cache/apt/*
+    apt install -y mailutils --no-install-recommends && \
+
+# Clean up
+    rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf ~/.cache && rm -rf /usr/share/doc
 
 WORKDIR /opt
 RUN wget ${ELASTALERT_PACKAGE} && \
@@ -60,6 +61,7 @@ RUN python setup.py install && \
     sed -i -e"s|python elastalert.py|python -m elastalert.elastalert --config ${ELASTALERT_CONFIG}|g" ${SUPERVISOR_CONF} && \
 
 # Clean up.
+    rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf ~/.cache && rm -rf /usr/share/doc && \
     apt remove -y python-dev && \
     apt remove -y gcc && \
     apt remove -y libssl-dev && \
