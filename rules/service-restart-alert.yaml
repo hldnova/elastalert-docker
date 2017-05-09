@@ -2,11 +2,11 @@
 
 # (Optional)
 # Elasticsearch host
-# es_host: elasticsearch.example.com
+# es_host: 10.247.134.224
 
 # (Optional)
 # Elasticsearch port
-# es_port: 14900
+# es_port: 9200
 
 # (OptionaL) Connect with SSL to Elasticsearch
 #use_ssl: True
@@ -17,7 +17,7 @@
 
 # (Required)
 # Rule name, must be unique
-name: Example frequency rule
+name: ECS service restart alert rule
 
 # (Required)
 # Type of alert.
