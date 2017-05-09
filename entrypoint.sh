@@ -9,7 +9,9 @@ ES_HOST=${ELASTICSEARCH_HOST:-elasticsearch}
 for file in $(find /opt/elastalert -name '*.yaml' -or -name '*.yml')
 do
     rm -f config_tmp
-    cat $file | sed "s|es_host: [[:print:]]*|es_host: ${ES_HOST}|g" | sed "s|es_port: [[:print:]]*|es_port: ${ES_PORT}|g" > config_tmp
+    cat $file | sed "s|es_host: [[:print:]]*|es_host: ${ES_HOST}|g" \
+              | sed "s|es_port: [[:print:]]*|es_port: ${ES_PORT}|g" \
+              | sed "s|EMAIL_ADDRESS|${EMAIL_ADDRESS}|" > config_tmp
     cat config_tmp > $file
 done 
 rm -f config_tmp
