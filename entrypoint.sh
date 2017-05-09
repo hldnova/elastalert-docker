@@ -1,45 +1,46 @@
 #!/bin/sh
 
-set -e
+set -uxe
 
-# Set the timezone.
-if [ "$SET_CONTAINER_TIMEZONE" = "true" ]; then
-	setup-timezone -z ${CONTAINER_TIMEZONE} && \
-	echo "Container timezone set to: $CONTAINER_TIMEZONE"
-else
-	echo "Container timezone not modified"
-fi
+ES_PORT=${ELASTICSEARCH_PORT:-9200}
+ES_HOST=${ELASTICSEARCH_HOST:-elasticsearch}
 
-# Force immediate synchronisation of the time and start the time-synchronization service.
-# In order to be able to use ntpd in the container, it must be run with the SYS_TIME capability.
-# In addition you may want to add the SYS_NICE capability, in order for ntpd to be able to modify its priority.
-#ntpd -s
+# 
+for file in $(find /opt/elastalert -name '*.yaml' -or -name '*.yml')
+do
+    rm -f config_tmp
+    cat $file | sed "s|es_host: [[:print:]]*|es_host: ${ES_HOST}|g" | sed "s|es_port: [[:print:]]*|es_port: ${ES_PORT}|g" > config_tmp
+    cat config_tmp > $file
+done 
+rm -f config_tmp
+
 
 # Wait until Elasticsearch is online since otherwise Elastalert will fail.
-rm -f garbage_file
-while ! wget -O garbage_file ${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT} 2>/dev/null
+rm -f temp_file
+while ! wget -O temp_file ${ES_HOST}:${ES_PORT} 2>/dev/null
 do
-	echo "Waiting for Elasticsearch..."
-	rm -f garbage_file
-	sleep 1
+    echo "Waiting for Elasticsearch..."
+    rm -f temp_file
+    sleep 1
 done
-rm -f garbage_file
+rm -f temp_file
 sleep 5
 
-# Check if the Elastalert index exists in Elasticsearch and create it if it does not.
-if ! wget -O garbage_file ${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}/elastalert_status 2>/dev/null
+# Create Elastalert index if it does not exist.
+if ! wget -O temp_file ${ES_HOST}:${ES_PORT}/elastalert_status 2>/dev/null
 then
-	echo "Creating Elastalert index in Elasticsearch..."
-    elastalert-create-index --host ${ELASTICSEARCH_HOST} --port ${ELASTICSEARCH_PORT} --config ${ELASTALERT_CONFIG} --index elastalert_status --old-index ""
+    echo "Creating Elastalert index in Elasticsearch..."
+    elastalert-create-index --host ${ES_HOST} --port ${ES_PORT} --config ${ELASTALERT_CONFIG} --index elastalert_status --old-index ""
 else
     echo "Elastalert index already exists in Elasticsearch."
 fi
-rm -f garbage_file
+rm -f temp_file
+
+# update hostname for postfix
+sed -i "s|myhostname = [[:print:]]*|myhostname = $(hostname -f)|" /etc/postfix/main.cf
 
 echo "Start smtp client"
 service postfix start
 
 echo "Starting Elastalert..."
-exec supervisord -c ${ELASTALERT_SUPERVISOR_CONF} -n
-#exec elastalert --verbose --rule example_frequency.yaml
-#exec elastalert --config /opt/config/elastalert_config.yaml --verbose --rule example_frequency.yaml
+exec supervisord -c ${SUPERVISOR_CONF} -n
