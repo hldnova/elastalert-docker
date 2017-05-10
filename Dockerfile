@@ -1,4 +1,4 @@
-# Elastalert Docker image running on Alpine Linux.
+# Docker image for elastalert on Ubuntu Linux.
 
 FROM ubuntu:xenial
 
@@ -11,7 +11,7 @@ ENV ELASTALERT_HOME /opt/elastalert
 ENV SUPERVISOR_CONF ${ELASTALERT_HOME}/elastalert_supervisord.conf
 ENV ELASTALERT_CONFIG ${ELASTALERT_HOME}/elastalert_config.yaml
 
-# Install software required for Elastalert and NTP for time synchronization.
+# Install software required for Elastalert
 RUN apt update && \
     apt install -y --no-install-recommends \
         ca-certificates openssl libffi-dev libssl-dev gcc \
@@ -43,34 +43,22 @@ RUN python setup.py install && \
 # Install Supervisor.
     easy_install supervisor && \
 
-# Create directories. The /var/empty directory is used by openntpd.
-#    mkdir -p ${CONFIG_DIR} && \
-#    mkdir -p ${RULES_DIRECTORY} && \
-#    mkdir -p ${LOG_DIR} && \
-#    mkdir -p /var/empty && \
-
 # Copy default configuration files to configuration directory.
     cp ${ELASTALERT_HOME}/supervisord.conf.example ${SUPERVISOR_CONF} && \
 
 # Elastalert Supervisor configuration:
-    # Redirect Supervisor log output to a file in the designated logs directory.
     sed -i -e"s|logfile=.*log|logfile=${LOG_DIR}/elastalert_supervisord.log|g" ${SUPERVISOR_CONF} && \
-    # Redirect Supervisor stderr output to a file in the designated logs directory.
     sed -i -e"s|stderr_logfile=.*log|stderr_logfile=${LOG_DIR}/elastalert_stderr.log|g" ${SUPERVISOR_CONF} && \
-    # Modify the start-command.
     sed -i -e"s|python elastalert.py|python -m elastalert.elastalert --config ${ELASTALERT_CONFIG}|g" ${SUPERVISOR_CONF} && \
 
 # Clean up.
-    rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf ~/.cache && rm -rf /usr/share/doc && \
-    apt remove -y python-dev && \
-    apt remove -y gcc && \
-    apt remove -y libssl-dev && \
-    apt remove -y libffi-dev
+    rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf ~/.cache && rm -rf /usr/share/doc
+#    apt remove -y python-dev && \
+#    apt remove -y gcc && \
+#    apt remove -y libssl-dev && \
+#    apt remove -y libffi-dev
 
-# Add Elastalert to Supervisord.
-#    supervisord -c ${ELASTALERT_SUPERVISOR_CONF}
-
-# Copy the script used to launch the Elastalert when a container is started.
+# Entrypoint script
 COPY ./entrypoint.sh /opt
 
 # Make the start-script executable.
@@ -78,8 +66,4 @@ RUN chmod +x /opt/entrypoint.sh
 
 ENV TERM linux
 
-# Define mount points.
-#VOLUME [ "${CONFIG_DIR}", "${RULES_DIRECTORY}", "${LOG_DIR}"]
-
-# Launch Elastalert when a container is started.
 CMD ["/opt/entrypoint.sh"]
