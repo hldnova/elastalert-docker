@@ -6,7 +6,7 @@ ES_PORT=${ELASTICSEARCH_PORT:-9200}
 ES_HOST=${ELASTICSEARCH_HOST:-elasticsearch}
 
 # 
-for file in $(find /opt/elastalert -name '*.yaml' -or -name '*.yml')
+for file in $(find /opt/elastalert/rules -name '*.yaml' -or -name '*.yml')
 do
     rm -f config_tmp
     cat $file | sed "s|es_host: [[:print:]]*|es_host: ${ES_HOST}|g" \
