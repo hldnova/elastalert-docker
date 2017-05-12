@@ -16,7 +16,12 @@ RUN apt update && \
     apt install -y --no-install-recommends \
         ca-certificates openssl libffi-dev libssl-dev gcc \
         python-dev python-pip python-setuptools \
-        wget net-tools less unzip busybox && \
+        wget snmp less unzip busybox && \
+
+# Link to busy box
+    ln -s /bin/busybox /bin/ping && \
+    ln -s /bin/busybox /bin/netstat && \
+    ln -s /bin/busybox /usr/bin/vi && \
 
 # Install smtp client
     echo "postfix postfix/mailname string localhost" | debconf-set-selections &&\
