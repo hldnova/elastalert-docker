@@ -17,7 +17,7 @@
 
 # (Required)
 # Rule name, must be unique
-name: ECS service restart alert rule
+name: service restart alert rule
 
 # (Required)
 # Type of alert.
@@ -54,7 +54,7 @@ alert:
 # (required, email specific)
 # a list of email addresses to send alerts to
 email:
-- "root@localhost"
+- "EMAIL_ADDRESS"
 
 #slack:
-#slack_webhook_url: ""
+#slack_webhook_url: "SLACK_WEBHOOK_URL"

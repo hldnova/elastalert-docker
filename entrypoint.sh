@@ -1,21 +1,29 @@
 #!/bin/sh
 
-set -uxe
+set -xe
 
-ES_PORT=${ELASTICSEARCH_PORT:-9200}
 ES_HOST=${ELASTICSEARCH_HOST:-elasticsearch}
+ES_PORT=${ELASTICSEARCH_PORT:-9200}
 
-# 
-for file in $(find /opt/elastalert/rules -name '*.yaml' -or -name '*.yml')
+# update elastalert_config.yaml
+CONFIG_TMP=${ELASTALERT_HOME}/config/config.yaml.template
+cat $CONFIG_TMP | sed "s|es_host: [[:print:]]*|es_host: ${ES_HOST}|g" \
+                | sed "s|es_port: [[:print:]]*|es_port: ${ES_PORT}|g" \
+    > $ELASTALERT_CONFIG
+
+# update rules
+for rule_tmp in $(find /opt/elastalert/rules -name '*.template' )
 do
-    rm -f config_tmp
-    cat $file | sed "s|es_host: [[:print:]]*|es_host: ${ES_HOST}|g" \
-              | sed "s|es_port: [[:print:]]*|es_port: ${ES_PORT}|g" \
-              | sed "s|EMAIL_ADDRESS|${EMAIL_ADDRESS}|" > config_tmp
-    cat config_tmp > $file
-done 
-rm -f config_tmp
+    rule=`echo ${rule_tmp%.template}`.yaml
 
+    cat $rule_tmp | sed "s|es_host: [[:print:]]*|es_host: ${ES_HOST}|g" \
+                  | sed "s|es_port: [[:print:]]*|es_port: ${ES_PORT}|g" \
+                  | sed "s|SLACK_WEBHOOK_URL|${SLACK_WEBHOOK_URL}|" \
+                  | sed "s|SNMP_COMMUNITY|${SNMP_COMMUNITY}|" \
+                  | sed "s|SNMP_TRAP_DESTINATION|${SNMP_TRAP_DESTINATION}|" \
+                  | sed "s|EMAIL_ADDRESS|${EMAIL_ADDRESS}|" \
+        > $rule
+done 
 
 # Wait until Elasticsearch is online since otherwise Elastalert will fail.
 rm -f temp_file

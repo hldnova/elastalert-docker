@@ -9,7 +9,7 @@ ENV ELASTALERT_PACKAGE https://github.com/Yelp/elastalert/archive/${ELASTALERT_V
 
 ENV ELASTALERT_HOME /opt/elastalert
 ENV SUPERVISOR_CONF ${ELASTALERT_HOME}/elastalert_supervisord.conf
-ENV ELASTALERT_CONFIG ${ELASTALERT_HOME}/elastalert_config.yaml
+ENV ELASTALERT_CONFIG ${ELASTALERT_HOME}/config/elastalert_config.yaml
 
 # Install software required for Elastalert
 RUN apt update && \
