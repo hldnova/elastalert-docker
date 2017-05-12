@@ -18,10 +18,10 @@ do
 
     cat $rule_tmp | sed "s|es_host: [[:print:]]*|es_host: ${ES_HOST}|g" \
                   | sed "s|es_port: [[:print:]]*|es_port: ${ES_PORT}|g" \
-                  | sed "s|SLACK_WEBHOOK_URL|${SLACK_WEBHOOK_URL}|" \
-                  | sed "s|SNMP_COMMUNITY|${SNMP_COMMUNITY}|" \
-                  | sed "s|SNMP_TRAP_DESTINATION|${SNMP_TRAP_DESTINATION}|" \
-                  | sed "s|EMAIL_ADDRESS|${EMAIL_ADDRESS}|" \
+                  | sed "s|SLACK_WEBHOOK_URL|${SLACK_WEBHOOK_URL:-http://localhost}|" \
+                  | sed "s|SNMP_COMMUNITY|${SNMP_COMMUNITYi:-public}|" \
+                  | sed "s|SNMP_TRAP_DESTINATION|${SNMP_TRAP_DESTINATION:-localhost}|" \
+                  | sed "s|EMAIL_ADDRESS|${EMAIL_ADDRESS:-root@localhost}|" \
         > $rule
 done 
 
