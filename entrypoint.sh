@@ -22,6 +22,7 @@ do
                   | sed "s|SNMP_COMMUNITY|${SNMP_COMMUNITYi:-public}|" \
                   | sed "s|SNMP_TRAP_DESTINATION|${SNMP_TRAP_DESTINATION:-localhost}|" \
                   | sed "s|EMAIL_ADDRESS|${EMAIL_ADDRESS:-root@localhost}|" \
+                  | sed "s|KIBANA_URL|${KIBANA_URL:-'http://localhost:5601'}|" \
         > $rule
 done 
 
